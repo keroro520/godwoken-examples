@@ -5,6 +5,7 @@
     "declaration": false,
     "types": ["node"],
     "lib": ["es2020"],
+    "outDir": "dist",
     "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,

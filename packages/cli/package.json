@@ -10,6 +10,7 @@
     "@ckb-lumos/hd": "^0.18.0-rc1",
     "@ckb-lumos/helpers": "^0.18.0-rc1",
     "@ckb-lumos/rpc": "^0.18.0-rc1",
+    "@ckb-lumos/toolkit": "^0.18.0-rc1",
     "@godwoken-examples/godwoken": "^0.0.1",
     "@metamask/eth-sig-util": "^4.0.0",
     "commander": "^6.2.1",
