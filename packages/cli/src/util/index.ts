@@ -1,5 +1,5 @@
 import {utils, Script, Cell, Transaction, Hash, RPC, HexString} from "@ckb-lumos/lumos";
-import {ckbRpc} from "../provider";
+import {ckbRpc, godwokenWeb3} from "../provider";
 import {EthAddress} from "../types";
 
 export function sumCkbCapacity(cells: Cell[]) : bigint{
@@ -45,8 +45,21 @@ export async function waitL1TxCommitted(
 }
 
 // FIXME Checking via getting balance is not accurate.
+// FIXME timeout
 export async function waitL2Deposited(
     ethAddress: EthAddress,
 ) {
+    const initBalance = await godwokenWeb3.getBalance(ethAddress);
+    console.log(`${ethAddress} balance: ${initBalance}`);
 
+    while (true) {
+        const balance = await godwokenWeb3.getBalance(ethAddress);
+        if (initBalance != balance) {
+            return;
+        }
+        await asyncSleep(1000);
+    }
+
+    const balance = await godwokenWeb3.getBalance(ethAddress);
+    console.log(`${ethAddress} balance: ${balance}. Deposited successfully`);
 }

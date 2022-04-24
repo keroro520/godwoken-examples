@@ -9,8 +9,8 @@ import {
     buildL1Transaction,
     collectInputCells
 } from "./deposit";
-import {ckbRpc} from "./provider";
-import {waitL1TxCommitted} from "./util";
+import {ckbRpc, godwokenWeb3} from "./provider";
+import {waitL1TxCommitted, waitL2Deposited} from "./util";
 import {MINIMUM_DEPOSIT_CAPACITY} from "./constant";
 import {initializeConfig} from "./config";
 
@@ -74,12 +74,13 @@ program
     .option("-m --sudt-amount <AMOUNT>", "depositing SUDT amount, default is 0")
     .option("-s --sudt-script-args <SUDTSCRIPTARGS>", "depositing SUDT script args")
     .action(async (program: Command) =>{
+        // Command deposit
         initializeConfig(program.lumosConfig, program.rollupTypeHash, program.ckbRpcUrl || "http://127.0.0.1:8114", program.ckbIndexerUrl || "http://localhost:8116");
         const ckbCapacity= getCapacity(program.capacity);
         const sudtAmount = getSudtAmount(program.sudtAmount);
         const sudtScript = sudtAmount === BigInt(0) ? undefined : getSudtScript(program.sudtScriptArgs!);
         const ckbUser = newCkbUser(program.privateKey);
-        const ethUser = newEthUser(program.ethAddress, program.privateKey);
+        const ethUser = newEthUser(program.privateKey, program.ethAddress);
         const output = buildDepositOutputCell(ckbUser, ethUser, ckbCapacity,sudtAmount,sudtScript);
         const outputCapacity = BigInt(output.cell_output.capacity.slice(2));
         const inputs = await collectInputCells(ckbUser,outputCapacity,sudtAmount,sudtScript);
@@ -88,6 +89,7 @@ program
         const tx = buildL1Transaction(ckbUser,inputs,[output,changeOutput], cellDeps);
         const txHash = await ckbRpc.send_transaction(tx, "passthrough");
         await waitL1TxCommitted(txHash,ckbRpc);
+        await waitL2Deposited(ethUser.ethAddress());
     });
 
 program.parse(program.argv);

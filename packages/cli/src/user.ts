@@ -3,7 +3,7 @@ import * as config from "./config";
 import {key} from "@ckb-lumos/hd";
 import {EthAddress, SECP256K1PrivateKey, CkbSecpLockArgs} from "./types";
 import * as crypto from "crypto";
-import * as keccak256 from "keccak256";
+import keccak256 from "keccak256";
 import {encodeToAddress, } from "@ckb-lumos/helpers";
 
 // NOTE: L2 lock script is ETH lock script
@@ -42,10 +42,6 @@ export class EthUser {
             args: rollupTypeHash + this.ethAddress__,
         };
     }
-
-    // async getBalance() : Promise<bigint> {
-    //
-    // }
 }
 
 // NOTE: L1 lock script is SECP256K1 lock script
