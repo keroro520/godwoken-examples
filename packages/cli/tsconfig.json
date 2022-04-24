@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "declaration": false,
+    "types": ["node"],
+    "lib": ["es2020"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "resolveJsonModule": true
+  },
+  "exclude": ["**/node_modules", "**/tests", "**/lib"]
+}
