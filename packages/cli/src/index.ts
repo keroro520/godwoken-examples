@@ -23,7 +23,7 @@ function getCapacity(ckbCapacity: string) : bigint {
 }
 
 function getSudtAmount(sudtAmount?: string) : bigint {
-    return sudtAmount == null ? BigInt(0): BigInt(sudtAmount.slice(2));
+    return sudtAmount == null ? BigInt(0): BigInt(sudtAmount);
 }
 
 function getSudtScript(sudtScriptArgs: string) : Script {
@@ -82,7 +82,7 @@ program
         const ckbUser = newCkbUser(program.privateKey);
         const ethUser = newEthUser(program.privateKey, program.ethAddress);
         const output = buildDepositOutputCell(ckbUser, ethUser, ckbCapacity,sudtAmount,sudtScript);
-        const outputCapacity = BigInt(output.cell_output.capacity.slice(2));
+        const outputCapacity = BigInt(output.cell_output.capacity);
         const inputs = await collectInputCells(ckbUser,outputCapacity,sudtAmount,sudtScript);
         const changeOutput = buildChangeOutputCell(ckbUser,inputs,[output], sudtScript);
         const cellDeps = buildDepositCellDeps(sudtAmount > BigInt(0));

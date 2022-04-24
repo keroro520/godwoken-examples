@@ -3,6 +3,7 @@ import https from "https";
 import {RPC as Rpc} from "@ckb-lumos/toolkit";
 import {EthAddress} from "../types";
 import {HexNumber} from "@ckb-lumos/base";
+import {readBigUInt128LE} from "@ckb-lumos/base/lib/utils";
 
 const httpAgent = new http.Agent({
     keepAlive: true,
@@ -32,7 +33,7 @@ export class GodwokenWeb3Rpc {
 
     public async getBalance(ethAddress: EthAddress): Promise<bigint> {
         const hexBalance = (await this.call_("eth_getBalance", ethAddress, "latest")) as HexNumber;
-        return BigInt(hexBalance.slice(2));
+        return BigInt(hexBalance);
     }
 
     private async call_(method: string, ...args: any[]): Promise<any> {
