@@ -11,28 +11,30 @@ import {
 } from "./deposit";
 import {ckbRpc} from "./provider";
 import {waitL1TxCommitted} from "./util";
+import {MINIMUM_DEPOSIT_CAPACITY} from "./constant";
+import {initializeConfig} from "./config";
 
-function getCapacity(capacity: string) : bigint {
-    return BigInt(capacity);
+function getCapacity(ckbCapacity: string) : bigint {
+    const capacity = BigInt(ckbCapacity);
+    if (capacity < MINIMUM_DEPOSIT_CAPACITY) {
+        throw new Error(`Invalid --capacity, expected greater than or equal to ${MINIMUM_DEPOSIT_CAPACITY}`);
+    }
+    return capacity;
 }
 
 function getSudtAmount(sudtAmount?: string) : bigint {
     return sudtAmount == null ? BigInt(0): BigInt(sudtAmount.slice(2));
 }
 
-function getSudtScript(sudtScriptArgs?: string) : Script | undefined {
-    if (sudtScriptArgs == null) {
-        return undefined;
-    } else {
-        if (!sudtScriptArgs!.startsWith("0x")) {
-            throw new Error("Invalid --sudt-script-args, expected 0x-prefix string");
-        }
-        return {
-            code_hash: config.getScriptConfig("SUDT").CODE_HASH,
-            hash_type: config.getScriptConfig("SUDT").HASH_TYPE,
-            args: sudtScriptArgs!,
-        };
+function getSudtScript(sudtScriptArgs: string) : Script {
+    if (!sudtScriptArgs!.startsWith("0x")) {
+        throw new Error("Invalid --sudt-script-args, expected 0x-prefix string");
     }
+    return {
+        code_hash: config.getScriptConfig("SUDT").CODE_HASH,
+        hash_type: config.getScriptConfig("SUDT").HASH_TYPE,
+        args: sudtScriptArgs!,
+    };
 }
 
 function newCkbUser(privateKey: string): CkbUser {
@@ -55,24 +57,27 @@ program
     .version(require('./../package.json').version);
 program
     .command("deposit")
+    .requiredOption("-p, --private-key <PRIVATEKEY>", "private key")
+    .requiredOption("-c --capacity <CAPACITY>", "depositing CKB capacity in shannons")
+    .requiredOption("--scripts-config <FILEPATH>", "scripts config file")
+    .requiredOption("--rollup-type-hash <HASH>", "rollup type hash")
     .option(
         "-r --ckb-rpc-url <RPC>",
         "CKB RPC URL",
         "http://127.0.0.1:8114"
     )
-    .option("-i, --indexer <INDEXER>", "CKB Indexer RPC URL", "http://127.0.0.1:8116")
+    .option("-i, --ckb-indexer-url <INDEXER>", "CKB Indexer RPC URL", "http://127.0.0.1:8116")
     .option(
         "-l, --eth-address <ADDRESS>",
         "ETH address (using --private-key corresponding ETH address if not provided)"
     )
     .option("-m --sudt-amount <AMOUNT>", "depositing SUDT amount, default is 0")
     .option("-s --sudt-script-args <SUDTSCRIPTARGS>", "depositing SUDT script args")
-    .requiredOption("-p, --private-key <PRIVATEKEY>", "private key")
-    .requiredOption("-c --capacity <CAPACITY>", "depositing CKB capacity in shannons")
     .action(async (program: Command) =>{
+        initializeConfig(program.scriptsConfig, program.rollupTypeHash, program.ckbRpcUrl, program.ckbIndexerUrl);
         const ckbCapacity= getCapacity(program.capacity);
-        const sudtScript = getSudtScript(program.sudtScriptArgs);
         const sudtAmount = getSudtAmount(program.sudtAmount);
+        const sudtScript = sudtAmount === BigInt(0) ? undefined : getSudtScript(program.sudtScriptArgs!);
         const ckbUser = newCkbUser(program.privateKey);
         const ethUser = newEthUser(program.ethAddress, program.privateKey);
         const output = buildDepositOutputCell(ckbUser, ethUser, ckbCapacity,sudtAmount,sudtScript);

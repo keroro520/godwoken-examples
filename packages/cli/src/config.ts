@@ -30,16 +30,11 @@ export function getScriptConfig(scriptName: string) : lumosConfigManager.ScriptC
     return lumosConfigManager.getConfig().SCRIPTS[scriptName]!;
 }
 
-export function initializeConfig(scriptConfigsFile: string) {
-    if (!process.env.CKB_RPC_URL) {
-        throw new Error(`Miss environment variable "CKB_RPC_URL"`);
-    }
-    if (!process.env.CKB_INDEXER_URL) {
-        throw new Error(`Miss environment variable "CKB_INDEXER_URL"`);
-    }
-    if (!process.env.ROLLUP_TYPE_HASH) {
-        throw new Error(`Miss environment variable "ROLLUP_TYPE_HASH"`);
-    }
+export function initializeConfig(scriptConfigsFile: string, rollupTypeHash: Hash, ckbRpcUrl: string, ckbIndexerUrl: string) {
+    process.env["ROLLUP_TYPE_HASH"] = rollupTypeHash;
+    process.env["CKB_RPC_URL"] = ckbRpcUrl;
+    process.env["CKB_INDEXER_URL"] = ckbIndexerUrl;
+
     if (!process.env.ROLLUP_TYPE_HASH!.startsWith("0x") || process.env.ROLLUP_TYPE_HASH!.length != 20) {
         throw new Error(`Invalid environment variable "ROLLUP_TYPE_HASH": "${process.env.ROLLUP_TYPE_HASH!}", expected 0x-prefix 20bytes`);
     }
