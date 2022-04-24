@@ -1,5 +1,6 @@
 import {utils, Script, Cell, Transaction, Hash, RPC, HexString} from "@ckb-lumos/lumos";
 import {ckbRpc} from "../provider";
+import {EthAddress} from "../types";
 
 export function sumCkbCapacity(cells: Cell[]) : bigint{
     return cells.reduce((acc, cell)=>acc+=BigInt(cell.cell_output.capacity), BigInt(0));
@@ -25,7 +26,7 @@ export async function waitL1TxCommitted(
     for (let index = 0; index < timeout; index += loopInterval) {
         try {
             const txWithStatus = await ckbRpc.get_transaction(txHash);
-            console.debug(`tx ${txHash} is ${txWithStatus}, waited for ${index} seconds`);
+            console.debug(`tx ${txHash} is ${txWithStatus?.tx_status.status}, waited for ${index} seconds`);
             if (txWithStatus!=null) {
                 const status = txWithStatus.tx_status.status;
                 if (status === "committed") {
@@ -41,4 +42,11 @@ export async function waitL1TxCommitted(
         }
     }
     throw new Error(`tx ${txHash} not committed in ${timeout} seconds`);
+}
+
+// FIXME Checking via getting balance is not accurate.
+export async function waitL2Deposited(
+    ethAddress: EthAddress,
+) {
+
 }

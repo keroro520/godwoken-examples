@@ -32,7 +32,7 @@ export class DepositLockArgsCodec implements DepositLockArgs {
     }
 
     HexSerialize(): HexString {
-        return Reader.from( molecule.SerializeDepositLockArgs( this.Normalize() )).serializeJson();
+        return Reader.from( molecule.SerializeDepositLockArgs( this.Normalize() )  ).serializeJson();
     }
 
     TrimmedHexSerialize(): string {

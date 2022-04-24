@@ -39,9 +39,13 @@ export class EthUser {
         return {
             code_hash: ethAccountLockScriptConfig.CODE_HASH,
             hash_type: ethAccountLockScriptConfig.HASH_TYPE,
-            args: rollupTypeHash.slice(2) + this.ethAddress__,
+            args: rollupTypeHash + this.ethAddress__,
         };
     }
+
+    // async getBalance() : Promise<bigint> {
+    //
+    // }
 }
 
 // NOTE: L1 lock script is SECP256K1 lock script

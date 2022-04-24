@@ -5,7 +5,7 @@ import {
     Script,
     helpers,
     Cell,
-    CellDep
+    CellDep, WitnessArgs
 } from "@ckb-lumos/lumos";
 import * as provider from "./provider";
 import {EthUser, CkbUser} from "./user";
@@ -17,6 +17,11 @@ import {sumCkbCapacity,sumSudtAmount} from "./util";
 import {common} from "@ckb-lumos/common-scripts";
 import {key} from "@ckb-lumos/hd";
 import {sealTransaction} from "@ckb-lumos/helpers";
+import {SerializeWitnessArgs} from "./schema/generated";
+import {normalizers, Reader} from "@ckb-lumos/toolkit";
+import * as molecule from "./schema/generated";
+import {normalizeObject} from "./schema/normalizers";
+import NormalizeWitnessArgs = normalizers.NormalizeWitnessArgs;
 
 export function buildDepositLockArgs(l1CkbUser: CkbUser, l2EthUser: EthUser) : DepositLockArgs {
     const l1LockHash = utils.computeScriptHash(l1CkbUser.l1LockScript());
@@ -142,10 +147,10 @@ export function buildChangeOutputCell(
         inputSudtAmount = sumSudtAmount(inputCells, sudtScript!);
     }
 
-    if (outputCkbCapacity < inputCkbCapacity + FEE + MINIMAL_CKB_CELL_CAPACITY) {
+    if (inputCkbCapacity < outputCkbCapacity + FEE + MINIMAL_CKB_CELL_CAPACITY) {
         throw new Error(`Not enough CKB, outputs CKB capacity: ${outputCkbCapacity}, inputs CKB capacity: ${inputCkbCapacity}, fee: ${FEE}, minimal_ckb_cell_capacity: ${MINIMAL_CKB_CELL_CAPACITY}`);
     }
-    if (outputSudtAmount < inputSudtAmount) {
+    if (inputSudtAmount < outputSudtAmount) {
         throw new Error(`Not enough SUDT, outputs SUDT amount: ${outputSudtAmount}, inputs SUDT amount: ${inputSudtAmount}`);
     }
 
@@ -204,24 +209,17 @@ export function buildL1Transaction(
         })
         .update("cellDeps", (cellDeps_)=>{
             return cellDeps_.push(...cellDeps);
+        })
+        .update("witnesses", (witnesses)=> {
+            const witnessArgs : WitnessArgs = {
+                lock: `0x${"0".repeat(65 * 2)}`,
+            }
+            const serializedWitnessArgs = SerializeWitnessArgs(     NormalizeWitnessArgs(witnessArgs));
+            witnesses = witnesses.push( Reader.from(serializedWitnessArgs).serializeJson());
+            return witnesses;
         });
     txSkeleton = common.prepareSigningEntries(txSkeleton);
     const message = txSkeleton.signingEntries.get(0)!.message;
     const signature = key.signRecoverable(message, l1CkbUser.privateKey__);
     return sealTransaction(txSkeleton, [signature]);
 }
-
-//     // Construct L1 transaction
-//     let txSkeleton = helpers.TransactionSkeleton({ cellProvider: provider.ckbIndexer });
-//     txSkeleton = txSkeleton.update("outputs", (outputs) => {
-//         return outputs.push({
-//             cell_output: depositOutput, data: depositOutputData,
-//         });
-//     });
-//
-//     // TODO Handle CKB change
-//
-//     const signedTx = await provider.signL1Transaction(txSkeleton);
-//     const txHash = await provider.sendL1Transaction(signedTx);
-//     return txHash;
-// }

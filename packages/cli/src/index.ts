@@ -59,7 +59,7 @@ program
     .command("deposit")
     .requiredOption("-p, --private-key <PRIVATEKEY>", "private key")
     .requiredOption("-c --capacity <CAPACITY>", "depositing CKB capacity in shannons")
-    .requiredOption("--scripts-config <FILEPATH>", "scripts config file")
+    .requiredOption("--lumos-config <FILEPATH>", "scripts config file")
     .requiredOption("--rollup-type-hash <HASH>", "rollup type hash")
     .option(
         "-r --ckb-rpc-url <RPC>",
@@ -74,7 +74,7 @@ program
     .option("-m --sudt-amount <AMOUNT>", "depositing SUDT amount, default is 0")
     .option("-s --sudt-script-args <SUDTSCRIPTARGS>", "depositing SUDT script args")
     .action(async (program: Command) =>{
-        initializeConfig(program.scriptsConfig, program.rollupTypeHash, program.ckbRpcUrl, program.ckbIndexerUrl);
+        initializeConfig(program.lumosConfig, program.rollupTypeHash, program.ckbRpcUrl || "http://127.0.0.1:8114", program.ckbIndexerUrl || "http://localhost:8116");
         const ckbCapacity= getCapacity(program.capacity);
         const sudtAmount = getSudtAmount(program.sudtAmount);
         const sudtScript = sudtAmount === BigInt(0) ? undefined : getSudtScript(program.sudtScriptArgs!);
