@@ -1,18 +1,14 @@
 import {
     Transaction,
-    commons,
-    HexNumber,
-    HexString,
     Output,
     utils,
     Script,
     helpers,
     Cell,
-    Hash,
     CellDep
 } from "@ckb-lumos/lumos";
 import * as provider from "./provider";
-import {User, UserWithPrivateKey} from "./user";
+import {EthUser, CkbUser} from "./user";
 import {DepositLockArgs, DepositLockArgsCodec,} from "./schema"
 import * as config from "./config";
 import {toBigUInt128LE} from "@ckb-lumos/base/lib/utils";
@@ -22,9 +18,9 @@ import {common} from "@ckb-lumos/common-scripts";
 import {key} from "@ckb-lumos/hd";
 import {sealTransaction} from "@ckb-lumos/helpers";
 
-export function buildDepositLockArgs(receiver: User) : DepositLockArgs {
-    const l1LockHash = utils.computeScriptHash(receiver.l1LockScript());
-    const l2Lock: Script = receiver.l2LockScript();
+export function buildDepositLockArgs(l1CkbUser: CkbUser, l2EthUser: EthUser) : DepositLockArgs {
+    const l1LockHash = utils.computeScriptHash(l1CkbUser.l1LockScript());
+    const l2Lock: Script = l2EthUser.l2LockScript();
     return {
         owner_lock_hash: l1LockHash,
         layer2_lock: l2Lock,
@@ -33,8 +29,8 @@ export function buildDepositLockArgs(receiver: User) : DepositLockArgs {
     }
 }
 
-export function buildDepositLock(receiver: User) : Script {
-    const depositLockArgs = buildDepositLockArgs(receiver);
+export function buildDepositLock(l1CkbUser: CkbUser, l2EthUser: EthUser) : Script {
+    const depositLockArgs = buildDepositLockArgs(l1CkbUser,l2EthUser);
     const depositLockArgsCodec = new DepositLockArgsCodec(depositLockArgs);
     const args = "0x" + config.ROLLUP_TYPE_HASH().slice(2) + depositLockArgsCodec.TrimmedHexSerialize();
     return {
@@ -45,8 +41,8 @@ export function buildDepositLock(receiver: User) : Script {
 }
 
 export function buildDepositOutputCell(
-    sender: UserWithPrivateKey,
-    receiver: User,
+    l1CkbUser: CkbUser,
+    l2EthUser: EthUser,
     ckbCapacity: bigint,
     sudtAmount: bigint = BigInt(0),
     sudtScript?: Script,
@@ -55,47 +51,42 @@ export function buildDepositOutputCell(
         // Deposit CKB only
         const cell_output: Output = {
             capacity: "0x" + ckbCapacity.toString(16),
-            lock: buildDepositLock(receiver),
+            lock: buildDepositLock(l1CkbUser,l2EthUser),
             type: undefined,
         };
-        const cell: Cell = {
+        return {
             cell_output,
             data: "0x",
         };
-        return cell;
     } else {
         // Deposit CKB and SUDT
         const cell_output: Output = {
             capacity: "0x" + ckbCapacity.toString(16),
-            lock: buildDepositLock(receiver),
+            lock: buildDepositLock(l1CkbUser,l2EthUser),
             type: sudtScript!,
         };
-        const cell: Cell = {
+        return {
             cell_output,
             data: toBigUInt128LE(sudtAmount),
         };
-        return cell;
     }
 }
 
-export async function collectLiveCells(
-    sender: UserWithPrivateKey,
-    outputCells: Cell[],
-    sudtScript?: Script,
+export async function collectInputCells(
+    l1CkbUser: CkbUser,
+    outputCkbCapacity: bigint,
+    outputSudtAmount: bigint,
+    outputSudtScript?: Script,
 ): Promise<Cell[]> {
-    const outputCkbCapacity= sumCkbCapacity(outputCells);
-    let outputSudtAmount= BigInt(0);
-    if (sudtScript) {
-        outputSudtAmount = sumSudtAmount(outputCells, sudtScript!);
-    }
-
     let collectedCkbCapacity= BigInt(0);
     let collectedSudtAmount = BigInt(0);
     let collectedInputCells : Cell[] = [];
+
+    // 1. Collect SUDT inputs
     if (outputSudtAmount > BigInt(0)) {
         const collector = provider.ckbIndexer.collector({
-            lock: sender.l1LockScript(),
-            type: sudtScript,
+            lock: l1CkbUser.l1LockScript(),
+            type: outputSudtScript,
         });
         for await (const cell of collector.collect()) {
             collectedInputCells.push(cell);
@@ -113,8 +104,9 @@ export async function collectLiveCells(
         throw new Error(`Not enough SUDT, expected: ${outputSudtAmount}, actual: ${collectedSudtAmount}`);
     }
 
+    // Collect pure CKB inputs
     const collector = provider.ckbIndexer.collector({
-        lock: sender.l1LockScript(),
+        lock: l1CkbUser.l1LockScript(),
         type: "empty",
         data: "0x",
     });
@@ -134,7 +126,7 @@ export async function collectLiveCells(
 }
 
 export function buildChangeOutputCell(
-    sender: UserWithPrivateKey,
+    l1CkbUser: CkbUser,
     inputCells: Cell[],
     outputCells: Cell[],
     sudtScript?: Script,
@@ -161,7 +153,7 @@ export function buildChangeOutputCell(
         const cell: Cell = {
             cell_output: {
                 capacity: "0x" + (inputCkbCapacity - outputCkbCapacity - FEE).toString(16),
-                lock: sender.l1LockScript(),
+                lock: l1CkbUser.l1LockScript(),
                 type: undefined,
             },
             data: "0x",
@@ -171,7 +163,7 @@ export function buildChangeOutputCell(
         const cell: Cell = {
             cell_output: {
                 capacity: "0x" + (inputCkbCapacity - outputCkbCapacity - FEE).toString(16),
-                lock: sender.l1LockScript(),
+                lock: l1CkbUser.l1LockScript(),
                 type: sudtScript,
             },
             data: toBigUInt128LE(inputSudtAmount - outputSudtAmount),
@@ -197,7 +189,7 @@ export function buildDepositCellDeps(includingSudtCellDep: boolean): CellDep[] {
 
 // NOTE: Assume the user use SECP256K1_BLAKE2B as lock script.
 export function buildL1Transaction(
-    sender: UserWithPrivateKey,
+    l1CkbUser:CkbUser,
     inputCells: Cell[],
     outputCells: Cell[],
     cellDeps: CellDep[],
@@ -215,7 +207,7 @@ export function buildL1Transaction(
         });
     txSkeleton = common.prepareSigningEntries(txSkeleton);
     const message = txSkeleton.signingEntries.get(0)!.message;
-    const signature = key.signRecoverable(message, sender.privateKey__);
+    const signature = key.signRecoverable(message, l1CkbUser.privateKey__);
     return sealTransaction(txSkeleton, [signature]);
 }
 
