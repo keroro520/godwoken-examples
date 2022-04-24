@@ -11,35 +11,20 @@ export class User {
 
     constructor(ethAddress: EthAddress) {
         assertEthAddress(ethAddress);
-        this.ethAddress__ = ethAddress;
+        this.ethAddress__ = ethAddress.toLowerCase();
     }
 
     ethAddress() : EthAddress {
         return this.ethAddress__;
     }
 
-    l1LockScript(): Script {
-        const omniScriptConfig = config.getScriptConfig("omni_lock");
-        let l1OmniLockScript: Script= {
-            code_hash: omniScriptConfig.CODE_HASH,
-            hash_type: omniScriptConfig.HASH_TYPE,
-            // omni flag       pubkey hash   omni lock flags
-            // chain identity   eth addr      function flag()
-            // 00: Nervos       👇            00: owner
-            // 01: Ethereum     👇            01: administrator
-            //      👇          👇            👇
-            args: `0x01${this.ethAddress__}00`,
-        };
-        return l1OmniLockScript;
-    }
-
     l2LockScript(): Script {
         const ethAccountLockScriptConfig =config.getScriptConfig("eth_account_lock");
-        const rollup
+        const rollupTypeHash = config.ROLLUP_TYPE_HASH();
         const l2EthLockScript: Script = {
-            code_hash: config.ETH_ACCOUNT_LOCK_TYPE_HASH,
-            hash_type: "type",
-            args: config.ROLLUP_TYPE_HASH + this.ethAddress__.toLowerCase(),
+            code_hash: ethAccountLockScriptConfig.CODE_HASH,
+            hash_type: ethAccountLockScriptConfig.HASH_TYPE,
+            args: rollupTypeHash.slice(2) + this.ethAddress__,
         };
         return l2EthLockScript;
     }
