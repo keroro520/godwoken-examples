@@ -82,6 +82,11 @@
     "@ckb-lumos/base" "^0.18.0-rc1"
     ckb-js-toolkit "^0.10.2"
 
+"@ckb-lumos/toolkit@^0.18.0-rc1":
+  version "0.18.0-rc7"
+  resolved "https://registry.yarnpkg.com/@ckb-lumos/toolkit/-/toolkit-0.18.0-rc7.tgz#fdd434a8004e70df6c93674576e3f7d9573c9aa0"
+  integrity sha512-3+BSEr4S9oU7by6hFAJ8EWUDdwgvZOrwkCYPKHH5jUeT3lLvmKppoDmlsUi3DLSr5LoYf785lw2qOCI4gf4HfA==
+
 "@eslint/eslintrc@^0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-0.2.2.tgz#d01fc791e2fc33e88a29d6f3dc7e93d0cd784b76"
