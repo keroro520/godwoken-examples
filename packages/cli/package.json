@@ -25,6 +25,7 @@
     "fmt": "prettier --write \"src/**/*.ts\" package.json",
     "build": "tsc",
     "help": "ts-node-script -s src/index.ts help",
-    "deposit": "ts-node-script -s src/index.ts deposit"
+    "deposit": "ts-node-script -s src/index.ts deposit",
+    "withdraw": "ts-node-script -s src/index.ts withdraw"
   }
 }

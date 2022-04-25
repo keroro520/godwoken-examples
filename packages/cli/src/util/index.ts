@@ -55,11 +55,27 @@ export async function waitL2Deposited(
     while (true) {
         const balance = await godwokenWeb3.getBalance(ethAddress);
         if (initBalance != balance) {
-            return;
+            break;
         }
         await asyncSleep(1000);
     }
 
     const balance = await godwokenWeb3.getBalance(ethAddress);
     console.log(`${ethAddress} balance: ${balance}. Deposited successfully`);
+}
+
+export async function waitL2WithdrawalCommitted(
+    withdrawalHash: Hash,
+) {
+    while (true) {
+        const withdrawalStatus = await godwokenWeb3.getWithdrawal(withdrawalHash);
+        if (withdrawalStatus!=null) {
+            if (withdrawalStatus.status === "committed") {
+                break;
+            }
+        }
+        console.log(`Withdrawal ${withdrawalHash} status: ${withdrawalStatus}`);
+        await asyncSleep(1000);
+    }
+    console.log(`Withdrawal ${withdrawalHash} was committed successfully`);
 }

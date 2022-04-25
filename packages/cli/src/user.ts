@@ -1,10 +1,13 @@
-import {HexString, Script} from "@ckb-lumos/lumos";
+import {Hash, HexString, Script} from "@ckb-lumos/lumos";
+import * as secp256k1 from "secp256k1";
 import * as config from "./config";
 import {key} from "@ckb-lumos/hd";
 import {EthAddress, SECP256K1PrivateKey, CkbSecpLockArgs} from "./types";
 import * as crypto from "crypto";
 import keccak256 from "keccak256";
 import {encodeToAddress, } from "@ckb-lumos/helpers";
+import {utils} from "@ckb-lumos/base";
+import {Reader} from "@ckb-lumos/toolkit";
 
 // NOTE: L2 lock script is ETH lock script
 export class EthUser {
@@ -39,8 +42,33 @@ export class EthUser {
         return {
             code_hash: ethAccountLockScriptConfig.CODE_HASH,
             hash_type: ethAccountLockScriptConfig.HASH_TYPE,
-            args: rollupTypeHash + this.ethAddress__,
+            args: rollupTypeHash + this.ethAddress__.slice(2),
         };
+    }
+
+    l2LockHash():Hash {
+        return utils.computeScriptHash( this.l2LockScript());
+    }
+
+    accountScriptHash(): Hash {
+        return this.l2LockHash();
+    }
+
+    sign(message: string) : HexString {
+        if (this.privateKey__==null) {
+            throw new Error(`EthUser without private key is unable to sign, eth address: ${this.ethAddress()}`);
+        }
+
+        const privkey=this.privateKey__!;
+        const signObject = secp256k1.ecdsaSign(
+            new Uint8Array(new Reader(message).toArrayBuffer()),
+            new Uint8Array(new Reader(privkey).toArrayBuffer())
+        );
+        const signatureBuffer = new ArrayBuffer(65);
+        const signatureArray = new Uint8Array(signatureBuffer);
+        signatureArray.set(signObject.signature, 0);
+        signatureArray.set([signObject.recid], 64);
+        return new Reader(signatureBuffer).serializeJson();
     }
 }
 
@@ -74,5 +102,9 @@ export class CkbUser {
             hash_type: secp256k1Blake160ScriptConfig.HASH_TYPE,
             args: this.ckbSecpLockArgs()
         };
+    }
+
+    l1LockHash():Hash {
+        return utils.computeScriptHash( this.l1LockScript());
     }
 }

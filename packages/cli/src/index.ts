@@ -10,9 +10,11 @@ import {
     collectInputCells
 } from "./deposit";
 import {ckbRpc, godwokenWeb3} from "./provider";
-import {waitL1TxCommitted, waitL2Deposited} from "./util";
+import {waitL1TxCommitted, waitL2Deposited, waitL2WithdrawalCommitted} from "./util";
 import {MINIMUM_DEPOSIT_CAPACITY} from "./constant";
 import {initializeConfig} from "./config";
+import {WithdrawalRequest, WithdrawalRequestExtra} from "./schema/schema";
+import {buildWithdrawalRequest} from "./withdraw";
 
 function getCapacity(ckbCapacity: string) : bigint {
     const capacity = BigInt(ckbCapacity);
@@ -92,4 +94,41 @@ program
         await waitL2Deposited(ethUser.ethAddress());
     });
 
+
+program
+    .command("withdraw")
+    .requiredOption("-p, --private-key <PRIVATEKEY>", "private key")
+    .requiredOption("-c --capacity <CAPACITY>", "withdrawal CKB capacity in shannons")
+    .requiredOption("--lumos-config <FILEPATH>", "scripts config file")
+    .requiredOption("--rollup-type-hash <HASH>", "rollup type hash")
+    .option(
+        "-r --ckb-rpc-url <RPC>",
+        "CKB RPC URL",
+        "http://127.0.0.1:8114"
+    )
+    .option("-i, --ckb-indexer-url <INDEXER>", "CKB Indexer RPC URL", "http://127.0.0.1:8116")
+    .option("-m --sudt-amount <AMOUNT>", "withdrawal SUDT amount, default is 0")
+    .option("-s --sudt-script-args <SUDTSCRIPTARGS>", "withdrawal SUDT script args")
+    .option("--fee <CAPACITY>", "withdrawal fee in shannons")
+    .action(async (program: Command) =>{
+        // Command deposit
+        initializeConfig(program.lumosConfig, program.rollupTypeHash, program.ckbRpcUrl || "http://127.0.0.1:8114", program.ckbIndexerUrl || "http://localhost:8116");
+        const ckbCapacity= getCapacity(program.capacity);
+        const sudtAmount = getSudtAmount(program.sudtAmount);
+        const sudtScript = sudtAmount === BigInt(0) ? undefined : getSudtScript(program.sudtScriptArgs!);
+        const fee: bigint = BigInt(program.fee);
+        const ckbUser = newCkbUser(program.privateKey); // I don't want to support specifying CKB address ~
+        const ethUser = newEthUser(program.privateKey);
+        const nonce= await godwokenWeb3.getNonce(ethUser.ethAddress());
+        const chainId = await godwokenWeb3.getChainId();
+        const withdrawalRequest=buildWithdrawalRequest(
+            ckbUser,ethUser,nonce,chainId,ckbCapacity,fee,sudtAmount,sudtScript
+        );
+        const withdrawalRequestExtra : WithdrawalRequestExtra ={
+            request: withdrawalRequest,
+            owner_lock: ckbUser.l1LockScript(),
+        };
+        const withdrawalHash = await godwokenWeb3.submitWithdrawalRequest(withdrawalRequestExtra);
+        await waitL2WithdrawalCommitted(withdrawalHash);
+    });
 program.parse(program.argv);

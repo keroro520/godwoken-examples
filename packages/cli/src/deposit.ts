@@ -19,8 +19,6 @@ import {key} from "@ckb-lumos/hd";
 import {sealTransaction} from "@ckb-lumos/helpers";
 import {SerializeWitnessArgs} from "./schema/generated";
 import {normalizers, Reader} from "@ckb-lumos/toolkit";
-import * as molecule from "./schema/generated";
-import {normalizeObject} from "./schema/normalizers";
 import NormalizeWitnessArgs = normalizers.NormalizeWitnessArgs;
 
 export function buildDepositLockArgs(l1CkbUser: CkbUser, l2EthUser: EthUser) : DepositLockArgs {
@@ -37,7 +35,7 @@ export function buildDepositLockArgs(l1CkbUser: CkbUser, l2EthUser: EthUser) : D
 export function buildDepositLock(l1CkbUser: CkbUser, l2EthUser: EthUser) : Script {
     const depositLockArgs = buildDepositLockArgs(l1CkbUser,l2EthUser);
     const depositLockArgsCodec = new DepositLockArgsCodec(depositLockArgs);
-    const args = "0x" + config.ROLLUP_TYPE_HASH().slice(2) + depositLockArgsCodec.TrimmedHexSerialize();
+    const args = "0x" + config.ROLLUP_TYPE_HASH().slice(2) + depositLockArgsCodec.HexSerialize().slice(2);
     return {
         code_hash: config.getScriptConfig("deposit_lock").CODE_HASH,
         hash_type: config.getScriptConfig("deposit_lock").HASH_TYPE,
