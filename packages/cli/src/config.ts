@@ -3,6 +3,7 @@ import { Hash, CellDep, Script } from "@ckb-lumos/lumos";
 import { BETANET } from "./predefined";
 import { HexString } from "@ckb-lumos/base";
 import { computeScriptHash } from "@ckb-lumos/base/lib/utils";
+import { GodwokenWeb3Rpc } from "./util/web3-rpc";
 
 export { ScriptConfig } from "@ckb-lumos/config-manager";
 
@@ -56,24 +57,10 @@ export function getScriptConfig(
 }
 
 // TODO: Verify if all the scripts code exist
-export function initializeConfig(lumosConfigFile: string) {
-  if (!process.env.ROLLUP_TYPE_HASH) {
-    throw new Error('Miss environment variable "ROLLUP_TYPE_HASH"');
+export async function initializeConfig(lumosConfigFile: string) {
+  if (!process.env.ROLLUP_SCRIPT_ARGS) {
+    throw new Error('Miss environment variable "ROLLUP_SCRIPT_ARGS"');
   }
-  if (
-    !process.env.ROLLUP_TYPE_HASH!.startsWith("0x") ||
-    process.env.ROLLUP_TYPE_HASH!.length != 66
-  ) {
-    throw new Error(
-      `Invalid environment variable "ROLLUP_TYPE_HASH": "${process.env
-        .ROLLUP_TYPE_HASH!}", expected 0x-prefix 20bytes`
-    );
-  }
-
-  console.log("CKB_RPC_URL:", CKB_RPC_URL());
-  console.log("CKB_INDEXER_URL:", CKB_INDEXER_URL());
-  console.log("GODWOKEN_WEB3_URL:", GODWOKEN_WEB3_URL());
-  console.log();
 
   if (lumosConfigFile.toUpperCase() === "BETANET") {
     console.log(`Load pre-defined configuration: "BETANET"`);
@@ -83,4 +70,30 @@ export function initializeConfig(lumosConfigFile: string) {
     const config: lumosConfigManager.Config = require(lumosConfigFile);
     lumosConfigManager.initializeConfig(config);
   }
+
+
+ const ethAccountLockScriptConfig = getScriptConfig("eth_account_lock");
+ const ethAccountLockScript : Script = {
+   code_hash: ethAccountLockScriptConfig.CODE_HASH,
+   hash_type: ethAccountLockScriptConfig.HASH_TYPE,
+   args: "0x",
+ };
+ const ethAccountLockScriptHash: Hash = computeScriptHash(ethAccountLockScript);
+ const godwokenWeb3 = new GodwokenWeb3Rpc(GODWOKEN_WEB3_URL());
+
+ console.log("CKB_RPC_URL:", CKB_RPC_URL());
+ console.log("CKB_INDEXER_URL:", CKB_INDEXER_URL());
+ console.log("GODWOKEN_WEB3_URL:", GODWOKEN_WEB3_URL());
+ console.log("ROLLUP_TYPE_HASH:", ROLLUP_TYPE_HASH());
+ console.log("ROLLUP_TYPE_SCRIPT:", ROLLUP_SCRIPT());
+ console.log("ETH_ACCOUNT_LOCK_SCRIPT_HASH:", ethAccountLockScriptHash);
+ console.log("ETH_ACCOUNT_LOCK:", ethAccountLockScript);
+ console.log();
+
+//  if (ROLLUP_TYPE_HASH() !== await godwokenWeb3.getRollupTypeHash()) {
+//    throw new Error(`Rollup Script is unmatched, configured script hash: ${ROLLUP_TYPE_HASH()}, web3.getRollupTypeHash: ${await godwokenWeb3.getRollupTypeHash()}`);
+//  }
+//  if ( ethAccountLockScriptHash !== await godwokenWeb3.getEthAccountLockHash()) {
+//    throw new Error(`ETH Account Lock is unmatched, configured script hash: ${ethAccountLockScriptHash}, web3.getEthAccountLockHash: ${await godwokenWeb3.getEthAccountLockHash()}`);
+//  }
 }

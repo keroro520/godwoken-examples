@@ -8,9 +8,10 @@ export const BETANET: lumosConfigManager.Config = lumosConfigManager.createConfi
 
       rollup_type_script: {
         CODE_HASH:
-          "0x3bda219a967978d2db0316e36f6d39aaa713e1740752283cf184c4c195eeb48a",
+          "0x1e44736436b406f8e48a30dfbddcf044feb0c9eebfe63b0f81cb5bb727d84854",
+        // HASH_TYPE: "type",
         HASH_TYPE: "type",
-        // ARGS: "0x375e628d7780e7f00bee16a63bc583b5ceb1ed779a4b2b4ab3f64381376e83ce",
+        // ARGS: "0x86c7429247beba7ddd6e4361bcdfc0510b0b644131e2afb7e486375249a01802"
         TX_HASH:
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         INDEX: "0x0",
@@ -19,7 +20,7 @@ export const BETANET: lumosConfigManager.Config = lumosConfigManager.createConfi
 
       eth_account_lock: {
         CODE_HASH:
-          "0x685ae74d35fdbffe2ac08b46c428f89136fd3b10d170f1c0570ddd0b28199235",
+          "0x07521d0aa8e66ef441ebc31204d86bb23fc83e9edc58c19dbb1b0ebe64336ec0",
         HASH_TYPE: "type",
         TX_HASH:
           "0x21da20f275af89ca7172cb1cd7fcb8676056e4212ba3782e8c77afebae57c6ed",
@@ -29,20 +30,20 @@ export const BETANET: lumosConfigManager.Config = lumosConfigManager.createConfi
 
       deposit_lock: {
         CODE_HASH:
-          "0x517d68117edfbe5f6397288336c6181e7666d34fc99cc0678ca148b1e97fd64e",
+          "0x50704b84ecb4c4b12b43c7acb260ddd69171c21b4c0ba15f3c469b7d143f6f18",
         HASH_TYPE: "type",
         TX_HASH:
-          "0x577a86b1885dee66e24f4df41e727a70176fd965ef19b80d2d16362656f616c1",
+          "0x9caeec735f3cd2a60b9d12be59bb161f7c61ddab1ac22c4383a94c33ba6404a2",
         INDEX: "0x0",
         DEP_TYPE: "code",
       },
 
       withdrawal_lock: {
         CODE_HASH:
-          "0xaa1a9c892b8bc5c5277b31b99e6e147994daf7cbf160db87bd6b0eb0ea6ce0e6",
+          "0x06ae0706bb2d7997d66224741d3ec7c173dbb2854a6d2cf97088796b677269c6",
         HASH_TYPE: "type",
         TX_HASH:
-          "0x309322839bd989c2f97f385dac774471c09643fe4f37ba9613e8dcc2e05bc539",
+          "0x9c607a9a75ea4699dd01b1c2a478002343998cac8346d2aa582f35b532bd2b93",
         INDEX: "0x0",
         DEP_TYPE: "code",
       },

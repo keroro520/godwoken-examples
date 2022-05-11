@@ -219,7 +219,7 @@ program
     "depositing SUDT script args"
   )
   .action(async (program: Command) => {
-    initializeConfig(program.lumosConfig);
+    await initializeConfig(program.lumosConfig);
     const ckbCapacity = getCapacity(program.capacity);
     const sudtAmount = getSudtAmount(program.sudtAmount);
     const sudtScript =
@@ -259,7 +259,7 @@ program
     "withdrawal SUDT script args"
   )
   .action(async (program: Command) => {
-    initializeConfig(program.lumosConfig);
+    await initializeConfig(program.lumosConfig);
     const ckbCapacity = getCapacity(program.capacity);
     const sudtAmount = getSudtAmount(program.sudtAmount);
     const sudtScript =
@@ -308,7 +308,7 @@ program
   )
   .action(async (program: Command) => {
     // batch-deposit
-    initializeConfig(program.lumosConfig);
+    await initializeConfig(program.lumosConfig);
     const ckbCapacity = getCapacity(program.capacity);
     const sudtAmount = getSudtAmount(program.sudtAmount);
     const sudtScript =
@@ -379,7 +379,7 @@ program
   )
   .action(async (program: Command) => {
     // batch-withdraw
-    initializeConfig(program.lumosConfig);
+    await initializeConfig(program.lumosConfig);
     const ckbCapacity = getCapacity(program.capacity);
     const sudtAmount = getSudtAmount(program.sudtAmount);
     const sudtScript =
@@ -427,7 +427,7 @@ program
   .requiredOption("--lumos-config <FILEPATH>", "scripts config file")
   .option("--seconds <SECONDS>", "running time in seconds, default is 600")
   .action(async (program: Command) => {
-    initializeConfig(program.lumosConfig);
+    await initializeConfig(program.lumosConfig);
 
     const seconds = program.seconds != null ? Number(program.seconds) : 600;
     asyncSleep(seconds * 1000).then(() => process.exit(0));

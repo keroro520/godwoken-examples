@@ -75,6 +75,14 @@ export class GodwokenWeb3Rpc {
     )) as Hash;
   }
 
+public async getEthAccountLockHash(): Promise<Hash> {
+    return (await this.call_("poly_getEthAccountLockHash")) as Hash;
+  }
+
+public async getRollupTypeHash(): Promise<Hash> {
+    return (await this.call_("poly_getRollupTypeHash")) as Hash;
+  }
+
   private async call_(method: string, ...args: any[]): Promise<any> {
     try {
       const result = await this.rpc__[method](...args);
