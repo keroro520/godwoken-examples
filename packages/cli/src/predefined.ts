@@ -49,3 +49,53 @@ export const BETANET: lumosConfigManager.Config = lumosConfigManager.createConfi
     },
   }
 );
+
+export const ALPHANET_V1_1: lumosConfigManager.Config = lumosConfigManager.createConfig(
+  {
+    PREFIX: lumosConfigManager.predefined.AGGRON4.PREFIX,
+    SCRIPTS: {
+      ...lumosConfigManager.predefined.AGGRON4.SCRIPTS,
+
+      rollup_type_script: {
+        CODE_HASH:
+          "0x56abab7961e8348aed629a0e59c05d0f6b555314f8f95606eae4bcb2adafdce3",
+        // HASH_TYPE: "type",
+        HASH_TYPE: "type",
+        TX_HASH:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        INDEX: "0x0",
+        DEP_TYPE: "code",
+      },
+
+      eth_account_lock: {
+        CODE_HASH:
+          "0x8d6af470fd57d1afe543751eed58afef310ec659d565319f448bcc765176dcdc",
+        HASH_TYPE: "type",
+        TX_HASH:
+          "0x3943cd4d8de3176f8b69e0e5b8c1fa69bbbfbeef693d5b56e2facf2bc1dcb3cf",
+        INDEX: "0x0",
+        DEP_TYPE: "code",
+      },
+
+      deposit_lock: {
+        CODE_HASH:
+          "0x9aa15280cf2123755516ff93180ab14b66a043562ffd70a0947afe7a12d573e5",
+        HASH_TYPE: "type",
+        TX_HASH:
+          "0x84c66a1b9ba28d3add646e2aa8415925bc765c888e08edd26e42a27bba421dbc",
+        INDEX: "0x0",
+        DEP_TYPE: "code",
+      },
+
+      withdrawal_lock: {
+        CODE_HASH:
+          "0xb580c581b8789dbd3add6c8d2efc63af3590b1a272d950e7dd1c2f64f5b425b5",
+        HASH_TYPE: "type",
+        TX_HASH:
+          "0x1943b90cef80f8b132a13a3fa57814f76584aadec3d5bab5b08c79a9896e7945",
+        INDEX: "0x0",
+        DEP_TYPE: "code",
+      },
+    },
+  }
+);

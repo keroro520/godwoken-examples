@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  ROLLUP_SCRIPT_ARGS: "0x86c7429247beba7ddd6e4361bcdfc0510b0b644131e2afb7e486375249a01802"
-  GODWOKEN_WEB3_URL: "https://godwoken-betanet-v1.ckbapp.dev"
+  ROLLUP_SCRIPT_ARGS: "0x749f79c58129fb18ce425e030e23f127fe60979ef8f69c28a945f4da19fec591"
+  GODWOKEN_WEB3_URL: "https://godwoken-alphanet-v1.ckbapp.dev"
   CKB_RPC_URL: "https://testnet.ckb.dev"
   CKB_INDEXER_URL: "https://testnet.ckb.dev/indexer"
 
@@ -22,7 +22,7 @@ jobs:
       working-directory: packages/cli
       run: |
         yarn run deposit \
-          --lumos-config BETANET \
+          --lumos-config ALPHANET_V1_1 \
           --private-key ${{ secrets.GODWOKEN_BENCHMARK_PRIVKEY }} \
           --capacity 50000000000 
 
@@ -37,7 +37,7 @@ jobs:
       working-directory: packages/cli
       run: |
         yarn run withdraw \
-          --lumos-config BETANET \
+          --lumos-config ALPHANET_V1_1 \
           --private-key ${{ secrets.GODWOKEN_BENCHMARK_PRIVKEY }} \
           --fee 100
 

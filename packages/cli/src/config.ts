@@ -1,6 +1,6 @@
 import * as lumosConfigManager from "@ckb-lumos/config-manager";
 import { Hash, CellDep, Script } from "@ckb-lumos/lumos";
-import { BETANET } from "./predefined";
+import { BETANET, ALPHANET_V1_1 } from "./predefined";
 import { HexString } from "@ckb-lumos/base";
 import { computeScriptHash } from "@ckb-lumos/base/lib/utils";
 import { GodwokenWeb3Rpc } from "./util/web3-rpc";
@@ -65,6 +65,9 @@ export async function initializeConfig(lumosConfigFile: string) {
   if (lumosConfigFile.toUpperCase() === "BETANET") {
     console.log(`Load pre-defined configuration: "BETANET"`);
     lumosConfigManager.initializeConfig(BETANET);
+  } else if (lumosConfigFile.toUpperCase() === "ALPHANET_V1_1") {
+    console.log(`Load pre-defined configuration: "ALPHANET_V1_1"`);
+    lumosConfigManager.initializeConfig(ALPHANET_V1_1);
   } else {
     console.log(`Load self-defined configuration: "${lumosConfigFile}"`);
     const config: lumosConfigManager.Config = require(lumosConfigFile);
